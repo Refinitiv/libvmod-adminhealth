@@ -141,7 +141,7 @@ vmod_set(VRT_CTX, struct vmod_priv *priv, const char *backend, const char* state
 	}
 
 	if (ctx == NULL) {
-		syslog(LOG_NOTICE, "ADMINHEALTH Context is NULL", backend);
+		syslog(LOG_NOTICE, "ADMINHEALTH Context is NULL");
 		return;
 	}
 	conf = ctx->vcl;

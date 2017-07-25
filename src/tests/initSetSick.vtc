@@ -16,10 +16,9 @@ server s2 {
     txresp -status 203
 } -start
 
-#start varnish instance
 varnish v1 -vcl+backend {
     import adminhealth from "${vmod_topbuild}/src/.libs/libvmod_adminhealth.so";
-    import directors from "/home/cloud/build/varnish-4.1.5/lib/libvmod_directors/.libs/libvmod_directors.so";
+    import directors;
 
     sub vcl_init {
             new sdir = directors.fallback();
@@ -49,7 +48,6 @@ varnish v1 -vcl+backend {
 
 } -start
 
-#start client
 varnish v1 -cliok "backend.list"
 
 client c1 {
