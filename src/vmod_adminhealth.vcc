@@ -1,0 +1,3 @@
+$Module adminhealth 3 Set health of backends dynamically in VCL
+$Event event_function
+$Function VOID set(PRIV_VCL, STRING, STRING)

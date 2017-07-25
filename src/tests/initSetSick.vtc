@@ -1,0 +1,71 @@
+varnishtest "Preset a backend to admin sick"
+
+server s1 {
+    rxreq
+    expect req.url == "/s1_healthy"
+    txresp -status 201
+} -start
+
+server s2 {
+    rxreq
+    expect req.url == "/s2"
+    txresp -status 202
+
+    rxreq
+    expect req.url == "/s1_sick"
+    txresp -status 203
+} -start
+
+#start varnish instance
+varnish v1 -vcl+backend {
+    import adminhealth from "${vmod_topbuild}/src/.libs/libvmod_adminhealth.so";
+    import directors from "/home/cloud/build/varnish-4.1.5/lib/libvmod_directors/.libs/libvmod_directors.so";
+
+    sub vcl_init {
+            new sdir = directors.fallback();
+            sdir.add_backend(s1);
+            sdir.add_backend(s2);
+
+            adminhealth.set("s1", "sick");
+    }
+    
+    sub vcl_recv {
+            if (req.url ~ "^/s1_healthy") {
+                    adminhealth.set("s1", "healthy");
+                    set req.backend_hint = sdir.backend();
+            }
+            else if (req.url ~ "^/s1_sick") {
+                    adminhealth.set("s1", "sick");
+                    set req.backend_hint = sdir.backend();
+            }
+            else if (req.url ~ "^/s1") {
+                    set req.backend_hint = s1;
+            }
+            else {
+                    set req.backend_hint = sdir.backend();
+            }
+            return(pass);
+    }
+
+} -start
+
+#start client
+varnish v1 -cliok "backend.list"
+
+client c1 {
+        txreq -url "/s1"
+        rxresp
+        expect resp.status == 503
+
+        txreq -url "/s2"
+        rxresp
+        expect resp.status == 202
+
+        txreq -url "/s1_healthy"
+        rxresp
+        expect resp.status == 201
+
+        txreq -url "/s1_sick"
+        rxresp
+        expect resp.status == 203
+} -run
