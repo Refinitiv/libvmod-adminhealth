@@ -107,7 +107,6 @@ event_function(VRT_CTX, struct vmod_priv *priv, enum vcl_event_e e)
 struct backend*
 _getbackend(const struct vcl *conf, const char *backend)
 {
-	int i;
 	struct backend *be;
 
 	AN(conf);
@@ -126,7 +125,6 @@ vmod_set(VRT_CTX, struct vmod_priv *priv, const char *backend, const char* state
 {
 	const char *state_code;
 	const struct vcl *conf;
-	config_t *priv_conf;
 
 	CHECK_OBJ_NOTNULL(ctx, VRT_CTX_MAGIC);
 
